@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Face Recognition</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex flex-col items-center justify-center h-screen bg-gray-100">
+  <h1 class="text-2xl font-bold mb-4">Real-Time Face Recognition</h1>
+  <video id="video" class="border rounded mb-4" autoplay></video>
+  <div id="status" class="text-lg font-medium text-blue-600"></div>
+
+  <script>
+    const video = document.getElementById("video");
+    const statusDiv = document.getElementById("status");
+
+    // Start video stream
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        video.srcObject = stream;
+      })
+      .catch(err => {
+        console.error("Error accessing camera:", err);
+      });
+
+    // Capture a frame every 2 seconds and send it to the backend
+    setInterval(() => {
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const context = canvas.getContext("2d");
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const imageData = canvas.toDataURL("image/jpeg");
+
+      fetch("http://127.0.0.1:5000/identify-face", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ image: imageData }),
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.unique_id) {
+            statusDiv.textContent = `Face recognized: ID ${data.unique_id}`;
+            statusDiv.classList.remove("text-red-600");
+            statusDiv.classList.add("text-green-600");
+          } else if (data.error) {
+            statusDiv.textContent = data.error;
+            statusDiv.classList.remove("text-green-600");
+            statusDiv.classList.add("text-red-600");
+          }
+        })
+        .catch(err => {
+          console.error("Error identifying face:", err);
+        });
+    }, 2000); // Every 2 seconds
+  </script>
+</body>
+</html>

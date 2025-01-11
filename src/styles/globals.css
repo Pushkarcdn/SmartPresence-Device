@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@font-face {
+  font-family: 'avenue';
+  src: url('../app/fonts/Avenue.woff') format('truetype');
+  font-weight: "100 900";
+}
+
+.component-px {
+  @apply px-3 sm:px-12 xl:px-20 !important;
+}
+
+.component-py {
+  @apply py-10 sm:py-12 !important;
+}
+
+input{
+  @apply outline-2  outline-primaryDark;
+}
+
+th{
+  @apply font-medium;
+}

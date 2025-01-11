@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Face Registration</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  <div class="bg-white shadow-lg rounded-lg p-6 w-full max-w-md">
+    <h1 class="text-2xl font-bold mb-4 text-center">Register Face</h1>
+    <div id="video-container" class="mb-4">
+      <video id="video" autoplay playsinline class="w-full rounded-md border"></video>
+    </div>
+    <div id="canvas-container" class="hidden">
+      <canvas id="canvas" class="w-full rounded-md border"></canvas>
+    </div>
+    <input
+      id="name"
+      type="text"
+      placeholder="Enter your name"
+      class="w-full px-4 py-2 border rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
+    />
+    <button
+      id="capture-btn"
+      class="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition"
+    >
+      Capture Face
+    </button>
+    <button
+      id="reset-btn"
+      class="w-full bg-gray-500 text-white py-2 rounded-md hover:bg-gray-600 transition hidden"
+    >
+      Reset
+    </button>
+  </div>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const captureBtn = document.getElementById('capture-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const nameInput = document.getElementById('name');
+
+    // Access the webcam
+    navigator.mediaDevices
+      .getUserMedia({ video: true })
+      .then((stream) => {
+        video.srcObject = stream;
+      })
+      .catch((err) => {
+        console.error('Error accessing webcam:', err);
+      });
+
+    // Capture the face
+    captureBtn.addEventListener('click', () => {
+      const name = nameInput.value.trim();
+      if (name.length < 3) {
+        alert('Please enter a valid name (at least 3 characters).');
+        return;
+      }
+
+      const context = canvas.getContext('2d');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      // Stop video and switch to canvas view
+      video.style.display = 'none';
+      canvas.style.display = 'block';
+      captureBtn.style.display = 'none';
+      resetBtn.style.display = 'block';
+
+      // Convert canvas image to data URL
+      const imageData = canvas.toDataURL('image/jpeg');
+
+      // Send to backend
+      fetch('http://127.0.0.1:5000/register-face', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, image: imageData }),
+      })
+        .then((response) => {
+          response.json().then((data) => {
+            if (response.ok) {
+            alert('Face registered successfully!');
+          } else {
+            alert(data.error || 'An error occurred. Please try again.');
+          }
+          });
+        })
+        .catch((error) => {
+          console.error('Error sending data to server:', error);
+          alert('An error occurred. Please try again.', error);
+        });
+    });
+
+    // Reset the view
+    resetBtn.addEventListener('click', () => {
+      video.style.display = 'block';
+      canvas.style.display = 'none';
+      captureBtn.style.display = 'block';
+      resetBtn.style.display = 'none';
+    });
+  </script>
+</body>
+</html>
