@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useRef, useState, useEffect } from "react";
@@ -6,6 +7,8 @@ const CamScreen = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const [response, setResponse] = useState<any>();
 
   useEffect(() => {
     const enableVideoStream = async () => {
@@ -59,6 +62,7 @@ const CamScreen = () => {
           });
 
           const data = await response.json();
+          setResponse(data);
           console.log("API Response:", data);
         } catch (err) {
           console.error("Error sending image to API:", err);
@@ -83,13 +87,29 @@ const CamScreen = () => {
       {error ? (
         <p className="text-red-500">{error}</p>
       ) : (
-        <div className="w-96 h-96 relative">
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            className="rounded-2xl bg-black"
-          />
+        <div className="flex flex-col items-center justify-center">
+          <div className="w-96 h-96 relative">
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              className="rounded-2xl bg-black"
+            />
+          </div>
+          <div className="">
+            {response?.unique_id && (
+              <div className="flex flex-col gap-3 text-cenetr">
+                <p className="text-green-500">{response.message}</p>
+                <p>ID: {response.unique_id}</p>
+              </div>
+            )}
+
+            {response?.error && (
+              <div>
+                <p className="text-red-500">{response.error}</p>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
