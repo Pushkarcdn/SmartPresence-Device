@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
+import Image from "next/image";
 import React, { useRef, useState, useEffect } from "react";
 
 const CamScreen = () => {
@@ -9,7 +11,6 @@ const CamScreen = () => {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [uploadStatus, setUploadStatus] = useState<string | null>(null);
 
   useEffect(() => {
     const enableVideoStream = async () => {
@@ -69,42 +70,6 @@ const CamScreen = () => {
     }
   };
 
-  const sendImageToApi = async () => {
-    if (!capturedImage) return;
-
-    try {
-      setUploadStatus("Uploading...");
-
-      // Define the payload
-      const payload = {
-        name: "User Name", // Replace with dynamic input if needed
-        image: capturedImage, // Base64 image string
-      };
-
-      // Send POST request
-      const response = await fetch("http://127.0.0.1:5000/register-face", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        setUploadStatus("Face registered successfully!");
-        console.log("API Response:", result);
-      } else {
-        setUploadStatus(result.error || "Upload failed. Please try again.");
-        console.error("API Error:", result);
-      }
-    } catch (error: any) {
-      setUploadStatus("An unexpected error occurred.");
-      console.error("Error uploading image:", error);
-    }
-  };
-
   return (
     <div className="flex flex-col items-center justify-center h-screen gap-4">
       {loading && !error ? (
@@ -130,16 +95,15 @@ const CamScreen = () => {
           {capturedImage && (
             <div className="mt-4">
               <p className="mb-2 text-center">Captured Image:</p>
-              <img src={capturedImage} alt="Captured" className="rounded-lg" />
-              <button
-                onClick={sendImageToApi}
-                className="mt-4 px-4 py-2 text-white bg-green-500 rounded-lg hover:bg-green-600"
-              >
-                Upload to API
-              </button>
+              <Image
+                width={1200}
+                height={1200}
+                src={capturedImage}
+                alt="Captured"
+                className="rounded-lg"
+              />
             </div>
           )}
-          {uploadStatus && <p className="mt-2 text-center">{uploadStatus}</p>}
         </>
       )}
 

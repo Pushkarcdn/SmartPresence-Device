@@ -1,197 +1,160 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
+import React, { useRef, useState, useEffect } from "react";
 
-export default function RegisterFace() {
+const CamScreen = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isCaptured, setIsCaptured] = useState(false);
-  const [name, setName] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [isVideoReady, setIsVideoReady] = useState(false);
-
-  // Initialize webcam
-  const startWebcam = () => {
-    navigator.mediaDevices
-      .getUserMedia({ video: true })
-      .then((stream) => {
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          videoRef.current.onloadedmetadata = () => {
-            videoRef.current.play();
-            checkVideoDimensions();
-          };
-        }
-      })
-      .catch((err) => {
-        console.error("Error accessing webcam:", err);
-        alert("Unable to access the webcam. Please check permissions.");
-      });
-  };
-
-  // Ensure video dimensions are valid
-  const checkVideoDimensions = () => {
-    if (videoRef.current) {
-      const videoWidth = videoRef.current.videoWidth;
-      const videoHeight = videoRef.current.videoHeight;
-
-      if (videoWidth && videoHeight) {
-        setIsVideoReady(true);
-      } else {
-        requestAnimationFrame(checkVideoDimensions);
-      }
-    }
-  };
-
-  const captureFace = async () => {
-    if (name.trim().length < 3) {
-      alert("Please enter a valid name (at least 3 characters).");
-      return;
-    }
-
-    if (!videoRef.current || !isVideoReady) {
-      alert("Webcam is still loading. Please wait and try again.");
-      return;
-    }
-
-    if (!canvasRef.current) {
-      alert("Canvas is not ready. Please try again.");
-      return;
-    }
-
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-
-    // Ensure video dimensions are valid
-    if (!video.videoWidth || !video.videoHeight) {
-      alert("Video dimensions are not ready. Please wait.");
-      return;
-    }
-
-    // Configure canvas dimensions
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-
-    const context = canvas.getContext("2d");
-    if (!context) {
-      alert("Failed to get canvas context.");
-      return;
-    }
-
-    // Draw the video frame onto the canvas
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    const imageBlob = await new Promise<Blob | null>((resolve) =>
-      canvas.toBlob(resolve, "image/jpeg")
-    );
-
-    if (!imageBlob) {
-      alert("An error occurred while capturing the image.");
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("name", name);
-    formData.append("image", imageBlob);
-
-    setIsLoading(true);
-
-    fetch("http://127.0.0.1:5000/register-face", {
-      method: "POST",
-      body: formData,
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.ok) {
-          alert("Face registered successfully!");
-        } else {
-          alert(data.error || "An error occurred. Please try again.");
-        }
-      })
-      .catch((error) => {
-        console.error("Error sending data to server:", error);
-        alert("An error occurred. Please try again.");
-      })
-      .finally(() => {
-        setIsLoading(false);
-        setIsCaptured(true);
-      });
-  };
-
-  // Reset the process
-  const resetCapture = () => {
-    setIsCaptured(false);
-    setName("");
-    if (videoRef.current?.srcObject) {
-      const tracks = videoRef.current.srcObject.getTracks();
-      tracks.forEach((track) => track.stop());
-    }
-    setIsVideoReady(false);
-    startWebcam();
-  };
+  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [uploadStatus, setUploadStatus] = useState<string | null>(null);
 
   useEffect(() => {
-    startWebcam();
-    return () => {
-      if (videoRef.current?.srcObject) {
-        const tracks = videoRef.current.srcObject.getTracks();
-        tracks.forEach((track) => track.stop());
+    const enableVideoStream = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: false,
+        });
+        setMediaStream(stream);
+      } catch (err: any) {
+        setError(`Unable to access the webcam: ${err.message}`);
+        console.error("Error accessing webcam", err);
+      } finally {
+        setLoading(false);
       }
     };
+
+    enableVideoStream();
   }, []);
 
-  return (
-    <div className="bg-gray-100 flex items-center justify-center min-h-screen">
-      <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-4 text-center">Register Face</h1>
+  useEffect(() => {
+    if (
+      videoRef.current &&
+      mediaStream &&
+      videoRef.current.srcObject !== mediaStream
+    ) {
+      videoRef.current.srcObject = mediaStream;
+    }
+  }, [videoRef, mediaStream]);
 
-        {!isCaptured ? (
-          <div id="video-container" className="mb-4">
+  useEffect(() => {
+    return () => {
+      if (mediaStream) {
+        mediaStream.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, [mediaStream]);
+
+  const captureImage = () => {
+    if (videoRef.current && canvasRef.current) {
+      const canvas = canvasRef.current;
+      const video = videoRef.current;
+
+      // Set canvas dimensions to match the video
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      // Draw the current video frame to the canvas
+      const context = canvas.getContext("2d");
+      if (context) {
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        // Get the image as a data URL and set it to the captured image state
+        const image = canvas.toDataURL("image/png");
+        setCapturedImage(image);
+      }
+    }
+  };
+
+  const sendImageToApi = async () => {
+    if (!capturedImage) return;
+
+    try {
+      setUploadStatus("Uploading...");
+
+      // Define the payload
+      const payload = {
+        name: "User Name", // Replace with dynamic input if needed
+        image: capturedImage, // Base64 image string
+      };
+
+      // Send POST request
+      const response = await fetch("http://127.0.0.1:5000/register-face", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setUploadStatus("Face registered successfully!");
+        console.log("API Response:", result);
+      } else {
+        setUploadStatus(result.error || "Upload failed. Please try again.");
+        console.error("API Error:", result);
+      }
+    } catch (error: any) {
+      setUploadStatus("An unexpected error occurred.");
+      console.error("Error uploading image:", error);
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center h-screen gap-4">
+      {loading && !error ? (
+        <p>Loading webcam...</p>
+      ) : error ? (
+        <p className="text-red-500">{error}</p>
+      ) : (
+        <>
+          <div className="relative w-full max-w-sm aspect-w-1 aspect-h-1">
             <video
               ref={videoRef}
               autoPlay
               playsInline
-              className="w-full rounded-md border"
-              aria-label="Webcam feed"
+              className="rounded-2xl bg-black"
             />
           </div>
-        ) : (
-          <div id="canvas-container" className="mb-4">
-            <canvas
-              ref={canvasRef}
-              className="w-full rounded-md border"
-              aria-label="Captured image preview"
-            />
-          </div>
-        )}
-
-        <input
-          id="name"
-          type="text"
-          placeholder="Enter your name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="w-full px-4 py-2 border rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
-          aria-label="Enter your name"
-        />
-        <button
-          id="capture-btn"
-          onClick={captureFace}
-          className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition"
-          disabled={isLoading || !isVideoReady}
-        >
-          {isLoading ? "Processing..." : "Enroll"}
-        </button>
-        {isCaptured && (
           <button
-            id="reset-btn"
-            onClick={resetCapture}
-            className="w-full bg-gray-500 text-white py-2 rounded-md hover:bg-gray-600 transition mt-4"
+            onClick={captureImage}
+            className="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600"
           >
-            Enroll again
+            Capture
           </button>
-        )}
-      </div>
+          {capturedImage && (
+            <div className="mt-4">
+              <p className="mb-2 text-center">Captured Image:</p>
+              <Image
+                width={1200}
+                height={1200}
+                src={capturedImage}
+                alt="Captured"
+                className="rounded-lg"
+              />
+              <button
+                onClick={sendImageToApi}
+                className="mt-4 px-4 py-2 text-white bg-green-500 rounded-lg hover:bg-green-600"
+              >
+                Upload to API
+              </button>
+            </div>
+          )}
+          {uploadStatus && <p className="mt-2 text-center">{uploadStatus}</p>}
+        </>
+      )}
+
+      {/* Hidden canvas for capturing the video frame */}
+      <canvas ref={canvasRef} className="hidden"></canvas>
     </div>
   );
-}
+};
+
+export default CamScreen;
