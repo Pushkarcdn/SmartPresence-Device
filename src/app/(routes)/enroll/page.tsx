@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
+import { PrimaryOutlineButton } from "@/components/global/buttons/Buttons";
 import Image from "next/image";
 import React, { useRef, useState, useEffect } from "react";
 
@@ -13,22 +14,22 @@ const CamScreen = () => {
   const [loading, setLoading] = useState(true);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
 
-  useEffect(() => {
-    const enableVideoStream = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: false,
-        });
-        setMediaStream(stream);
-      } catch (err: any) {
-        setError(`Unable to access the webcam: ${err.message}`);
-        console.error("Error accessing webcam", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const enableVideoStream = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: false,
+      });
+      setMediaStream(stream);
+    } catch (err: any) {
+      setError(`Unable to access the webcam: ${err.message}`);
+      console.error("Error accessing webcam", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     enableVideoStream();
   }, []);
 
@@ -108,33 +109,37 @@ const CamScreen = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen gap-4">
+    <div className="flex flex-col items-center justify-center min-h-[80vh] gap-4">
       {loading && !error ? (
         <p>Loading webcam...</p>
       ) : error ? (
         <p className="text-red-500">{error}</p>
       ) : (
         <>
-          <div className="relative w-full max-w-sm aspect-w-1 aspect-h-1">
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              className="rounded-2xl bg-black"
-            />
-          </div>
-          <button
-            onClick={captureImage}
-            className="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600"
-          >
-            Capture
-          </button>
+          {!capturedImage && (
+            <div className="flex flex-col items-center gap-4">
+              <div className="relative w-full max-w-sm aspect-w-1 aspect-h-1">
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  className="rounded-2xl bg-black"
+                />
+              </div>
+              <button
+                onClick={captureImage}
+                className="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+              >
+                Capture
+              </button>
+            </div>
+          )}
           {capturedImage && (
             <div className="mt-4">
               <p className="mb-2 text-center">Captured Image:</p>
               <Image
-                width={1200}
-                height={1200}
+                width={500}
+                height={500}
                 src={capturedImage}
                 alt="Captured"
                 className="rounded-lg"
@@ -148,6 +153,17 @@ const CamScreen = () => {
             </div>
           )}
           {uploadStatus && <p className="mt-2 text-center">{uploadStatus}</p>}
+          <br />
+          {capturedImage && (
+            <PrimaryOutlineButton
+              onClick={() => {
+                enableVideoStream();
+                setCapturedImage(null);
+                setUploadStatus(null);
+              }}
+              title="Retake"
+            />
+          )}
         </>
       )}
 
