@@ -66,6 +66,10 @@ export function PrimaryButton({
       {action && (
         <ClickBtn title={title} className={myClasses} action={action} />
       )}
+
+      {onClick && (
+        <ClickBtn title={title} className={myClasses} onClick={onClick} />
+      )}
     </>
   );
 }

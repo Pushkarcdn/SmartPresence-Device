@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import React from "react";
 import type { Metadata } from "next";
 import NextTopLoader from "nextjs-toploader";
-import React from "react";
 
 import "../styles/globals.css";
 import "../styles/customStyles.css";
@@ -11,9 +11,6 @@ import "../styles/customStyles.css";
 import "react-toastify/dist/ReactToastify.css";
 
 import { Poppins } from "next/font/google";
-
-import MobileNav from "@/components/global/navbars/MobileNav";
-import Navbar from "@/components/global/navbars/Navbar";
 
 const poppins = Poppins({
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
@@ -48,8 +45,6 @@ export default function RootLayout({
           zIndex={1600}
           showAtBottom={false}
         />
-        <Navbar />
-        {/* <MobileNav /> */}
         {children}
       </body>
     </html>

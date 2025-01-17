@@ -34,7 +34,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "src/components/cart/Cart.tsx",
-    "src/app/(routes)/(homepage)"
+    "src/app/(root)/(admin)/live-attendance"
   ],
   "exclude": [
     "node_modules"

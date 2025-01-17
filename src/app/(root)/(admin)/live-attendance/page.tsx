@@ -83,7 +83,7 @@ const CamScreen = () => {
   }, [mediaStream]);
 
   return (
-    <div className="flex flex-col items-center mt-20 min-h-[80vh] gap-5">
+    <div className="flex flex-col items-center mt-20 min-h-[60vh] gap-5 col-span-5">
       {error ? (
         <p className="text-red-500">{error}</p>
       ) : (
