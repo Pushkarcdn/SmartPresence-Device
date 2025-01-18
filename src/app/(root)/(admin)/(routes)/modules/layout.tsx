@@ -4,24 +4,23 @@ import TopTab from "@/components/admin/globals/TopTabs";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Programs | SmartPresence",
-  description: "SmartPresence admin panel - programs",
+  title: "Modules | SmartPresence",
+  description: "SmartPresence admin panel - modules",
 };
 
-export default function ProgramLayout({
+export default function ModuleLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   const tabs = [
     {
-      text: "All programs",
-      link: "/programs",
+      text: "All modules",
+      link: "/modules",
     },
-
     {
-      text: "Add program",
-      link: "/programs/new",
+      text: "Add module",
+      link: "/modules/new",
     },
   ];
 

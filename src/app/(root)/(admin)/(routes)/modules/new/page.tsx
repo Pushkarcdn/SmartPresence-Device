@@ -8,17 +8,23 @@ import { Select } from "antd";
 import hitApi from "@/lib/axios";
 
 import Gamification from "@/components/global/modals/Gamification";
-import { today } from "@/utils/dateFormatters";
+import useFetch from "@/hooks/useFetch";
+import Loader from "@/components/global/ui/Loader";
 
-const AddProgram = () => {
+const AddModule = () => {
   const [formData, setFormData] = useState({
+    programId: "",
     name: "",
-    totalCredits: "",
+    credits: "",
   }) as any;
 
   const [loading, setLoading] = useState(false);
   const [failedText, setFailedText] = useState("");
   const [successModalStatus, setSuccessModalStatus] = useState(false);
+
+  const { data: programs, loading: programsLoading } = useFetch(
+    "/programs"
+  ) as any;
 
   const handleChange = (e: any) => {
     setFormData({
@@ -30,25 +36,22 @@ const AddProgram = () => {
   const handleSubmit = async () => {
     setFailedText("");
 
+    console.log(formData);
+
     // Check if all required fields are filled
-    if (!(formData.name && formData.totalCredits)) {
+    if (!(formData.name && formData.credits)) {
       setLoading(false);
       setFailedText("Please fill all the required fields");
       return;
     }
 
-    // Check if the total credits is a number
-    if (isNaN(formData.totalCredits)) {
+    if (isNaN(formData.credits)) {
       setLoading(false);
-      setFailedText("Total credits must be a number");
+      setFailedText("Credits must be a number");
       return;
     }
 
-    // limit the total credits to 1000
-    if (
-      parseInt(formData.totalCredits) > 1000 ||
-      parseInt(formData.totalCredits) < 50
-    ) {
+    if (parseInt(formData.credits) > 500 || parseInt(formData.credits) < 1) {
       setLoading(false);
       setFailedText("Please enter a valid credit.");
       return;
@@ -57,7 +60,7 @@ const AddProgram = () => {
     setLoading(true);
 
     // Send the form data to the server
-    const res = await hitApi("/programs", "POST", formData);
+    const res = await hitApi("/modules", "POST", formData);
 
     if (res?.success) {
       setSuccessModalStatus(true);
@@ -68,42 +71,75 @@ const AddProgram = () => {
     setLoading(false);
   };
 
+  if (programsLoading) {
+    return <Loader />;
+  }
+
   return (
     <div className="w-full flex flex-col gap-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-4 text-left">
         <div className="flex flex-col gap-2">
           <label htmlFor="fullName" className="text-sm">
-            Program Name <span className="text-red-500 text-sm">*</span>
+            Module Name <span className="text-red-500 text-sm">*</span>
           </label>
           <input
             type="text"
             name="name"
             value={formData.name}
             onChange={handleChange}
-            placeholder="i.e. Computing"
-            className="w-full p-2.5 text-darkText placeholder-[#555555] font-normal border-2 border-gray-300 rounded-lg outline-gray-400 text-sm"
+            placeholder="i.e. Programming"
+            className="w-full p-2.5 text-darkText placeholder-[#555555] font-normal border border-gray-300 rounded-md outline-blue-500 text-sm"
           />
         </div>
 
         <div className="flex flex-col gap-2">
           <label htmlFor="fullName" className="text-sm">
-            Total credits
+            Credits
             <span className="text-red-500 text-sm">*</span>
           </label>
           <input
             type="text"
-            name="totalCredits"
-            value={formData.totalCredits}
+            name="credits"
+            value={formData.credits}
             onChange={handleChange}
-            placeholder="i.e. 120"
-            className="w-full p-2.5 text-darkText placeholder-[#555555] font-normal border-2 border-gray-300 rounded-lg outline-gray-400 text-sm"
+            placeholder="i.e. 60"
+            className="w-full p-2.5 text-darkText placeholder-[#555555] font-normal border border-gray-300 rounded-md outline-blue-500 text-sm"
+          />
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <label htmlFor="fullName" className="text-sm">
+            Program <span className="text-red-500 text-sm">*</span>
+          </label>
+          <Select
+            showSearch
+            placeholder="Select a program"
+            optionFilterProp="label"
+            filterSort={(optionA, optionB) =>
+              (optionA?.label ?? "")
+                .toString()
+                .toLowerCase()
+                .localeCompare((optionB?.label ?? "").toString().toLowerCase())
+            }
+            options={programs?.map((program: any) => ({
+              value: program.id,
+              label: program.name,
+            }))}
+            className="w-full h-10"
+            onChange={(value: any) =>
+              setFormData({
+                ...formData,
+                programId: value,
+              })
+            }
+            // style={{ width: "100%" }}
           />
         </div>
       </div>
 
       <div className="w-full flex sm:justify-end flex-col sm:flex-row mt-5 gap-4">
         <Link
-          href={"/programs"}
+          href={"/modules"}
           className="px-12 py-2 text-secondary hover:bg-secondary hover:text-white transition border-2 border-secondary rounded-lg text-center"
         >
           Cancel
@@ -130,12 +166,12 @@ const AddProgram = () => {
           isOpen={successModalStatus}
           closeModal={() => setSuccessModalStatus(false)}
           title="Successs"
-          text="Program added successfully!"
-          link={"/programs"}
+          text="Module added successfully!"
+          link={"/modules"}
         />
       )}
     </div>
   );
 };
 
-export default AddProgram;
+export default AddModule;

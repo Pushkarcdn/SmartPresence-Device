@@ -2,23 +2,43 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { Select } from "antd";
 import hitApi from "@/lib/axios";
+import useFetch from "@/hooks/useFetch";
+
+import { Select } from "antd";
 
 import Gamification from "@/components/global/modals/Gamification";
-import { today } from "@/utils/dateFormatters";
+import Loader from "@/components/global/ui/Loader";
 
-const AddProgram = () => {
+const EditGroup = ({ params }: any) => {
+  const { id } = params;
+
   const [formData, setFormData] = useState({
     name: "",
-    totalCredits: "",
+    programId: "",
   }) as any;
 
   const [loading, setLoading] = useState(false);
   const [failedText, setFailedText] = useState("");
   const [successModalStatus, setSuccessModalStatus] = useState(false);
+
+  const { data: programs, loading: programsLoading } = useFetch(
+    "/programs"
+  ) as any;
+
+  const { data, loading: dataLoading } = useFetch(`/groups/${id}`);
+
+  useEffect(() => {
+    if (programs && data) {
+      setFormData({
+        ...formData,
+        programId: data?.programId,
+        name: data?.name,
+      });
+    }
+  }, [programs, data]);
 
   const handleChange = (e: any) => {
     setFormData({
@@ -31,33 +51,16 @@ const AddProgram = () => {
     setFailedText("");
 
     // Check if all required fields are filled
-    if (!(formData.name && formData.totalCredits)) {
+    if (!(formData.name && formData.programId)) {
       setLoading(false);
       setFailedText("Please fill all the required fields");
-      return;
-    }
-
-    // Check if the total credits is a number
-    if (isNaN(formData.totalCredits)) {
-      setLoading(false);
-      setFailedText("Total credits must be a number");
-      return;
-    }
-
-    // limit the total credits to 1000
-    if (
-      parseInt(formData.totalCredits) > 1000 ||
-      parseInt(formData.totalCredits) < 50
-    ) {
-      setLoading(false);
-      setFailedText("Please enter a valid credit.");
       return;
     }
 
     setLoading(true);
 
     // Send the form data to the server
-    const res = await hitApi("/programs", "POST", formData);
+    const res = await hitApi(`/groups/${id}`, "PUT", formData);
 
     if (res?.success) {
       setSuccessModalStatus(true);
@@ -68,12 +71,14 @@ const AddProgram = () => {
     setLoading(false);
   };
 
+  if (dataLoading || programsLoading) return <Loader />;
+
   return (
     <div className="w-full flex flex-col gap-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-4 text-left">
         <div className="flex flex-col gap-2">
           <label htmlFor="fullName" className="text-sm">
-            Program Name <span className="text-red-500 text-sm">*</span>
+            Group Name <span className="text-red-500 text-sm">*</span>
           </label>
           <input
             type="text"
@@ -87,23 +92,38 @@ const AddProgram = () => {
 
         <div className="flex flex-col gap-2">
           <label htmlFor="fullName" className="text-sm">
-            Total credits
-            <span className="text-red-500 text-sm">*</span>
+            Program <span className="text-red-500 text-sm">*</span>
           </label>
-          <input
-            type="text"
-            name="totalCredits"
-            value={formData.totalCredits}
-            onChange={handleChange}
-            placeholder="i.e. 120"
-            className="w-full p-2.5 text-darkText placeholder-[#555555] font-normal border-2 border-gray-300 rounded-lg outline-gray-400 text-sm"
+          <Select
+            showSearch
+            placeholder="Select a program"
+            optionFilterProp="label"
+            filterSort={(optionA, optionB) =>
+              (optionA?.label ?? "")
+                .toString()
+                .toLowerCase()
+                .localeCompare((optionB?.label ?? "").toString().toLowerCase())
+            }
+            options={programs?.map((program: any) => ({
+              value: program.id,
+              label: program.name,
+            }))}
+            value={formData.programId}
+            className="w-full h-10"
+            onChange={(value: any) =>
+              setFormData({
+                ...formData,
+                programId: value,
+              })
+            }
+            // style={{ width: "100%" }}
           />
         </div>
       </div>
 
       <div className="w-full flex sm:justify-end flex-col sm:flex-row mt-5 gap-4">
         <Link
-          href={"/programs"}
+          href={"/groups"}
           className="px-12 py-2 text-secondary hover:bg-secondary hover:text-white transition border-2 border-secondary rounded-lg text-center"
         >
           Cancel
@@ -115,7 +135,7 @@ const AddProgram = () => {
           }`}
           disabled={loading}
         >
-          {loading ? "Saving..." : "Save"}
+          {loading ? "Updating..." : "Update"}
         </button>
       </div>
 
@@ -130,12 +150,12 @@ const AddProgram = () => {
           isOpen={successModalStatus}
           closeModal={() => setSuccessModalStatus(false)}
           title="Successs"
-          text="Program added successfully!"
-          link={"/programs"}
+          text="Group updated successfully!"
+          link={"/groups"}
         />
       )}
     </div>
   );
 };
 
-export default AddProgram;
+export default EditGroup;

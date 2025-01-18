@@ -59,9 +59,12 @@ const EditProgram = ({ params }: any) => {
     }
 
     // limit the total credits to 1000
-    if (parseInt(formData.totalCredits) > 1000) {
+    if (
+      parseInt(formData.totalCredits) > 1000 ||
+      parseInt(formData.totalCredits) < 50
+    ) {
       setLoading(false);
-      setFailedText("Credits too high. Please enter a valid credit.");
+      setFailedText("Please enter a valid credit.");
       return;
     }
 
