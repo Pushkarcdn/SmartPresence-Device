@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const today = new Date().toISOString().split("T")[0]; // today's date
 
@@ -33,6 +34,22 @@ export function formatDate(
   }
 }
 
+export function formatTime(time: string) {
+  // Split the time string into hours and minutes
+  const [hours, minutes] = time.split(":").map(Number);
+
+  // Determine AM or PM
+  let period = hours >= 12 ? "PM" : "AM";
+
+  // Convert hours to 12-hour format
+  const newHour = hours % 12 || 12; // Converts 0 to 12 for midnight
+
+  // Format the time as a string
+  return `${newHour.toString().padStart(2, "0")}:${minutes
+    .toString()
+    .padStart(2, "0")} ${period}`;
+}
+
 export function hoursAgo(dateString: any) {
   const date = new Date(dateString) as any; // Convert the input string to a Date object
   const now = new Date() as any; // Get the current time
@@ -46,5 +63,6 @@ export function hoursAgo(dateString: any) {
 }
 
 export function getDateForField(date: string) {
-  return new Date(date).toISOString().split("T")[0];
+  if (!date) return "";
+  return new Date(date)?.toISOString()?.split("T")[0] || "";
 }

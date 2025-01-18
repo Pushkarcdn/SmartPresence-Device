@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import Image from "next/image";
-import { formatDate } from "@/utils/dateFormatters";
+import { formatDate } from "@/utils/dateTimeFormatters";
 import ActionCard from "./ActionCard";
 import { getFileUrl } from "@/config";
 

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
-import { formatDate } from "@/utils/dateFormatters";
+import { formatDate } from "@/utils/dateTimeFormatters";
 import Image from "next/image";
 import { getFileUrl } from "@/config";
 import ActionCard from "./ActionCard";

@@ -3,7 +3,7 @@ import React from "react";
 import { StatusCard } from "../programs/StatusCard";
 import { getFileUrl } from "@/config";
 import InterviewsList from "./InterviewsList";
-import { formatDate } from "@/utils/dateFormatters";
+import { formatDate } from "@/utils/dateTimeFormatters";
 
 const ApplicantDetails = ({
   application,

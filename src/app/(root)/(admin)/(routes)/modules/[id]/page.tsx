@@ -152,7 +152,7 @@ const EditModule = ({ params }: any) => {
 
       <div className="w-full flex sm:justify-end flex-col sm:flex-row mt-5 gap-4">
         <Link
-          href={"/programs"}
+          href={"/modules"}
           className="px-12 py-2 text-secondary hover:bg-secondary hover:text-white transition border-2 border-secondary rounded-lg text-center"
         >
           Cancel

@@ -39,8 +39,8 @@ const data = [
   },
   {
     icon: <PiTimerLight size={22} />,
-    text: "Classes",
-    navigateTo: "/classes",
+    text: "Schedules",
+    navigateTo: "/schedules",
   },
   {
     icon: <PiUserLight size={22} />,

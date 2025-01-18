@@ -35,8 +35,6 @@ const AddGroup = () => {
   const handleSubmit = async () => {
     setFailedText("");
 
-    console.log(formData);
-
     // Check if all required fields are filled
     if (!(formData.name && formData.programId)) {
       setLoading(false);

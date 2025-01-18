@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { formatDate } from "@/utils/dateFormatters";
+import { formatDate } from "@/utils/dateTimeFormatters";
 import Link from "next/link";
 import React from "react";
 

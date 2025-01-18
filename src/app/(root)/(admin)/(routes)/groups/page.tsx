@@ -5,7 +5,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import useFetch from "@/hooks/useFetch";
-import { formatDate } from "@/utils/dateFormatters";
+import { formatDate } from "@/utils/dateTimeFormatters";
 import Loader from "@/components/global/ui/Loader";
 import ActionCard from "@/components/admin/groups/ActionCard";
 

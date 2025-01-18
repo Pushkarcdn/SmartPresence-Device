@@ -15,7 +15,7 @@ import { BsViewList } from "react-icons/bs";
 import UploadCVModal from "@/components/global/modals/UploadCVModal";
 import useFetch from "@/hooks/useFetch";
 import Loader from "@/components/global/ui/Loader";
-import { formatDate } from "@/utils/dateFormatters";
+import { formatDate } from "@/utils/dateTimeFormatters";
 import hitApi from "@/lib/axios";
 import Link from "next/link";
 import { getFileUrl } from "@/config";

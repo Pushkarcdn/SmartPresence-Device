@@ -5,14 +5,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import useFetch from "@/hooks/useFetch";
-import { formatDate } from "@/utils/dateTimeFormatters";
+import { formatDate, formatTime } from "@/utils/dateTimeFormatters";
 import Loader from "@/components/global/ui/Loader";
-import ActionCard from "@/components/admin/modules/ActionCard";
+import ActionCard from "@/components/admin/schedules/ActionCard";
 
-export default function Programs() {
+export default function Schedules() {
   const [searchTerm, setSearchTerm] = useState("") as any;
 
-  const { data, loading, fetchData: refetch } = useFetch(`/modules`) as any;
+  const { data, loading, fetchData: refetch } = useFetch(`/classes`) as any;
 
   return (
     <div className="flex flex-col justify-center items-center gap-6 rounded-lg w-full">
@@ -25,10 +25,10 @@ export default function Programs() {
           onChange={(e: any) => setSearchTerm(e.target.value)}
         />
         <Link
-          href={"/modules/new"}
+          href={"/schedules/new"}
           className="py-3 px-14 rounded-md font-medium bg-active flex items-center justify-center text-white bg-secondary hover:bg-[#b65e00] transition text-center text-nowrap"
         >
-          Add new module
+          Add schedule
         </Link>
       </div>
 
@@ -37,43 +37,61 @@ export default function Programs() {
           <table className="rounded-lg w-full ">
             <thead>
               <tr className="bg-[#f9fafb] rounded-xl text-sm text-nowrap">
-                <th className="px-2 py-2 text-left font-medium">Module name</th>
-                <th className="px-2 py-2 text-left font-medium">
-                  Program name
-                </th>
-                <th className="px-2 py-2 text-left font-medium">Credits</th>
-
-                <th className="px-2 py-2 text-left font-medium">Created</th>
+                <th className="px-2 py-2 text-left font-medium">Group</th>
+                <th className="px-2 py-2 text-left font-medium">Module</th>
+                <th className="px-2 py-2 text-left font-medium">Program</th>
+                <th className="px-2 py-2 text-left font-medium">Teacher</th>
+                <th className="px-2 py-2 text-left font-medium">Date</th>
+                <th className="px-2 py-2 text-left font-medium">Start time</th>
+                <th className="px-2 py-2 text-left font-medium">End time</th>
                 <th className="px-8 py-2 text-center font-medium">Action</th>
               </tr>
             </thead>
             <tbody className="text-nowrap">
               {data?.map(
                 (item: any, index: number) =>
-                  (item?.name
+                  (item?.teacher.module.name
                     ?.toLowerCase()
                     .includes(searchTerm?.toLowerCase().trim()) ||
-                    item?.program.name
+                    item?.teacher.module.program.name
                       ?.toLowerCase()
                       .includes(searchTerm?.toLowerCase().trim()) ||
-                    item?.credits
+                    item?.teacher.firstName
+                      ?.toLowerCase()
+                      .includes(searchTerm?.toLowerCase().trim()) ||
+                    item?.teacher.lastName
+                      ?.toLowerCase()
+                      .includes(searchTerm?.toLowerCase().trim()) ||
+                    item?.group.name
                       ?.toLowerCase()
                       .includes(searchTerm?.toLowerCase().trim())) && (
                     <tr key={index}>
                       <td className="border-t px-2 py-5 text-left text-sm text-gray-500 min-w-44">
-                        {item.name}
+                        {item.group.name}
                       </td>
 
                       <td className="border-t px-2 py-5 text-left text-sm text-gray-500">
-                        {item.program.name}
+                        {item.teacher.module.name}
                       </td>
 
                       <td className="border-t px-2 py-5 text-left text-sm text-gray-500">
-                        {item.credits}
+                        {item.teacher.module.program.name}
                       </td>
 
                       <td className="border-t px-2 py-5 text-left text-sm text-gray-500">
-                        {formatDate(item?.createdAt, "long")}
+                        {item.teacher.firstName} {item.teacher.lastName}
+                      </td>
+
+                      <td className="border-t px-2 py-5 text-left text-sm text-gray-500">
+                        {formatDate(item?.date, "long")}
+                      </td>
+
+                      <td className="border-t px-2 py-5 text-left text-sm text-gray-500">
+                        {formatTime(item?.startTime)}
+                      </td>
+
+                      <td className="border-t px-2 py-5 text-left text-sm text-gray-500">
+                        {formatTime(item?.endTime)}
                       </td>
 
                       <td className="border-t py-5">
@@ -91,7 +109,7 @@ export default function Programs() {
         {data?.length === 0 && (
           <div className="flex justify-center items-center h-96 w-full">
             <h1 className="text-xl font-semibold text-gray-500">
-              No module found
+              No schedules found
             </h1>
           </div>
         )}

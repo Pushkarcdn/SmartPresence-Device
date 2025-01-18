@@ -8,7 +8,7 @@ import { Select } from "antd";
 import hitApi from "@/lib/axios";
 
 import Gamification from "@/components/global/modals/Gamification";
-import { today } from "@/utils/dateFormatters";
+import { today } from "@/utils/dateTimeFormatters";
 
 const AddProgram = () => {
   const [formData, setFormData] = useState({

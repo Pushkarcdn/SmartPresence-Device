@@ -5,7 +5,7 @@ import { fileSizes, getFileUrl } from "@/config";
 import { useAuth } from "@/contexts/AuthContext";
 import Image from "next/image";
 import hitApi from "@/lib/axios";
-import { getDateForField } from "@/utils/dateFormatters";
+import { getDateForField } from "@/utils/dateTimeFormatters";
 import React, { useEffect, useState } from "react";
 
 function PersonalInformations({ userData }: any) {
