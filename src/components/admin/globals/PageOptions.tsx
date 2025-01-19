@@ -44,8 +44,8 @@ const data = [
   },
   {
     icon: <PiUserLight size={22} />,
-    text: "Users",
-    navigateTo: "/users",
+    text: "Enrollments",
+    navigateTo: "/enrollments/students",
   },
 ];
 
@@ -60,7 +60,7 @@ const PageOptions = ({ close }: { close?: () => void }) => {
     text: string;
     navigateTo: string;
   }) => {
-    const isActive = usePathname().includes(navigateTo);
+    const isActive = usePathname().includes(navigateTo.split("/")[1]);
 
     return (
       <Link

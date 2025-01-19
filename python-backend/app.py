@@ -7,7 +7,7 @@ from flask_cors import CORS  # Import CORS
 
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes and origins
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 REGISTERED_DIR = "registered_faces"
 
@@ -33,21 +33,38 @@ def get_registered_faces():
     return face_encodings, face_ids
 
 
-@app.route("/register-face", methods=["POST"])
+@app.route("/api/register-face", methods=["POST"])
 def register_face():
     data = request.get_json()
-    name = data.get("name")
     image_data = data.get("image")
 
-    if not name or not image_data:
-        return jsonify({"error": "All fields along with the image are required!"}), 422
+    if not image_data:
+        return (
+            jsonify(
+                {
+                    "statue": 422,
+                    "success": False,
+                    "message": "Image is required",
+                }
+            ),
+            422,
+        )
 
     # Decode Base64 image
     try:
         image_data = image_data.split(",")[1]
         image_bytes = base64.b64decode(image_data)
     except Exception as e:
-        return jsonify({"error": "Invalid image format"}), 422
+        return (
+            jsonify(
+                {
+                    "statue": 422,
+                    "success": False,
+                    "message": "Error processing the image",
+                }
+            ),
+            422,
+        )
 
     # Load image for face detection
     try:
@@ -56,19 +73,40 @@ def register_face():
         image = face_recognition.load_image_file("temp_image.jpg")
         face_locations = face_recognition.face_locations(image)
     except Exception as e:
-        return jsonify({"error": "Error processing the image"}), 500
+        return (
+            jsonify(
+                {
+                    "statue": 500,
+                    "success": False,
+                    "message": "Error processing the image",
+                }
+            ),
+            500,
+        )
     finally:
         if os.path.exists("temp_image.jpg"):
             os.remove("temp_image.jpg")
 
     # Check the number of faces detected
     if len(face_locations) == 0:
-        return jsonify({"error": "No face detected. Please try again."}), 422
+        return (
+            jsonify(
+                {
+                    "statue": 422,
+                    "success": False,
+                    "message": "No face detected. Please ensure a face is in the frame.",
+                }
+            ),
+            422,
+        )
     elif len(face_locations) > 1:
         return (
             jsonify(
                 {
-                    "error": "Multiple faces detected. Please ensure only one face is in the frame."
+                    "success": False,
+                    "message": len(face_locations)
+                    + " faces detected. Please ensure only one face is in the frame.",
+                    "status": 422,
                 }
             ),
             422,
@@ -82,26 +120,51 @@ def register_face():
         f.write(image_bytes)
 
     return (
-        jsonify({"message": "Face registered successfully", "unique_id": unique_id}),
+        jsonify(
+            {
+                "status": 201,
+                "success": True,
+                "message": "Face registered successfully",
+                "unique_id": unique_id,
+            }
+        ),
         201,
     )
 
 
-@app.route("/identify-face", methods=["POST"])
+@app.route("/api/identify-face", methods=["POST"])
 def identify_face():
     """Identify if the given face matches any registered face."""
     data = request.get_json()
     image_data = data.get("image")
 
     if not image_data:
-        return jsonify({"error": "Image data is required"}), 400
+        return (
+            jsonify(
+                {
+                    "status": 422,
+                    "success": False,
+                    "message": "Image is required",
+                }
+            ),
+            422,
+        )
 
     # Decode Base64 image
     try:
         image_data = image_data.split(",")[1]
         image_bytes = base64.b64decode(image_data)
     except Exception:
-        return jsonify({"error": "Invalid image format"}), 400
+        return (
+            jsonify(
+                {
+                    "status": 422,
+                    "success": False,
+                    "message": "Error processing the image, ensure it is a valid Base64 string",
+                }
+            ),
+            422,
+        )
 
     # Load and encode the incoming face
     try:
@@ -116,7 +179,16 @@ def identify_face():
             os.remove("temp_image.jpg")
 
     if len(face_encodings) != 1:
-        return jsonify({"error": "Ensure exactly one face is in the frame"}), 400
+        return (
+            jsonify(
+                {
+                    "status": 422,
+                    "success": False,
+                    "message": "Ensure only one face is in the frame.",
+                }
+            ),
+            422,
+        )
 
     # Compare against registered faces
     registered_encodings, registered_ids = get_registered_faces()
@@ -126,12 +198,26 @@ def identify_face():
         match_index = matches.index(True)
         return (
             jsonify(
-                {"message": "Face recognized", "unique_id": registered_ids[match_index]}
+                {
+                    "status": 200,
+                    "success": True,
+                    "message": "Face recognized",
+                    "unique_id": registered_ids[match_index],
+                }
             ),
             200,
         )
     else:
-        return jsonify({"error": "Face not recognized"}), 404
+        return (
+            jsonify(
+                {
+                    "status": 422,
+                    "success": False,
+                    "message": "Face not recognized!",
+                }
+            ),
+            404,
+        )
 
 
 if __name__ == "__main__":

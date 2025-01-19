@@ -1,14 +1,49 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
+import config from "@/config";
+import hitApi from "@/lib/axios";
 import React, { useRef, useState, useEffect } from "react";
 
 const CamScreen = () => {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const playAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.play().catch((error) => {
+        console.error("Error playing audio: ", error);
+      });
+    }
+  };
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
-  const [response, setResponse] = useState<any>();
+  const [failedText, setFailedText] = useState<string | null>(null);
+  const [data, setData] = useState<any>();
+
+  const makePresent = async (id: string) => {
+    try {
+      const res = await hitApi(`/record-presence/${id}`);
+      if (res?.success) {
+        setData(res);
+        playAudio();
+        setTimeout(() => {
+          setData(null);
+        }, 2000);
+      } else {
+        // setFailedText(
+        //   res?.message || "Something went wrong. Please try again."
+        // );
+        // setTimeout(() => {
+        //   setFailedText(null);
+        // }, 1000);
+      }
+    } catch (err) {
+      console.error("Error making present!", err);
+    }
+  };
 
   useEffect(() => {
     const enableVideoStream = async () => {
@@ -19,8 +54,13 @@ const CamScreen = () => {
         });
         setMediaStream(stream);
       } catch (err) {
-        setError("Unable to access the webcam. Please check your permissions.");
         console.error("Error accessing webcam", err);
+        setFailedText(
+          "Unable to access the webcam. Please check your permissions."
+        );
+        // setTimeout(() => {
+        //   setFailedText(null);
+        // }, 1000);
       }
     };
 
@@ -52,20 +92,37 @@ const CamScreen = () => {
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
         const image = canvas.toDataURL("image/png");
 
+        if (data) return;
+
         try {
-          const response = await fetch("http://127.0.0.1:5000/identify-face", {
+          let res = (await fetch(`${config.PYTHON_BE_URL}/api/identify-face`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({ image }),
-          });
+          })) as any;
 
-          const data = await response.json();
-          setResponse(data);
-          console.log("API Response:", data);
+          res = await res.json();
+
+          if (res?.success) {
+            if (res.unique_id) {
+              makePresent(res.unique_id);
+            }
+          } else {
+            // setFailedText(
+            //   res?.message || "Something went wrong. Please try again."
+            // );
+            // setTimeout(() => {
+            //   setFailedText(null);
+            // }, 1000);
+          }
         } catch (err) {
-          console.error("Error sending image to API:", err);
+          console.error("Error sending image.", err);
+          // setFailedText("Something went wrong. Please try again");
+          // setTimeout(() => {
+          //   setFailedText(null);
+          // }, 1000);
         }
       }
     };
@@ -83,21 +140,39 @@ const CamScreen = () => {
   }, [mediaStream]);
 
   return (
-    <div className="flex flex-col items-center mt-20 min-h-[60vh] gap-5 col-span-5">
-      {error ? (
-        <p className="text-red-500">{error}</p>
-      ) : (
-        <div className="flex flex-col items-center justify-center">
-          <div className="w-96 h-96 relative">
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              className="rounded-2xl bg-black"
+    <div className="w-full flex flex-col items-center component-px component-py min-h-[80vh] gap-5 col-span-5">
+      <div className="relative w-full flex flex-col items-center justify-center text-center gap-6">
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          className="rounded-2xl bg-black max-w-[800px] max-h-[60vh] object-cover object-center"
+        />
+
+        {failedText && (
+          <p className="bg-red-100 py-3 px-6 rounded-lg text-red-500 text-sm">
+            {failedText}
+          </p>
+        )}
+
+        {data?.success && (
+          <div className="flex flex-col gap-3 text-cenetr">
+            <p className="text-green-600 bg-green-100 py-2.5 px-6 rounded-lg">
+              Thank you!
+            </p>
+            <audio
+              ref={audioRef}
+              src="/audio/thank-you.mp3"
+              // className="hidden"
             />
+            <p>
+              {data.data.firstName} {data.data.lastName}
+            </p>
           </div>
-          <div className="">
-            {response?.unique_id && (
+        )}
+
+        {/* <div className="">
+            {data?.unique_id && (
               <div className="flex flex-col gap-3 text-cenetr">
                 <p className="text-green-500">{response.message}</p>
                 <p>ID: {response.unique_id}</p>
@@ -109,9 +184,8 @@ const CamScreen = () => {
                 <p className="text-red-500">{response.error}</p>
               </div>
             )}
-          </div>
-        </div>
-      )}
+          </div> */}
+      </div>
     </div>
   );
 };

@@ -2,6 +2,8 @@ const config = {
   BE_URL: process.env.NEXT_PUBLIC_BE_URL,
 
   API_URL: process.env.NEXT_PUBLIC_BE_URL + "/api",
+
+  PYTHON_BE_URL: process.env.NEXT_PUBLIC_PYTHON_BE_URL,
 };
 
 export const getFileUrl = (url: string) => {

@@ -21,7 +21,7 @@ export default function Navbar() {
       <div className="flex items-center gap-6 sm:gap-8">
         <PrimaryOutlineButton title="Attendance mode" link={"/"} />
 
-        <PrimaryButton title="Enroll" link={"/enroll"} />
+        <PrimaryButton title="Enroll" link={"/enrollments/new"} />
       </div>
     </nav>
   );
