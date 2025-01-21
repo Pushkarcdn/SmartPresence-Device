@@ -2,7 +2,7 @@
 
 import SignIn from "@/components/admin/sign-in/SignIn";
 
-export default function AdminSignin() {
+export default function Signin() {
   return (
     <>
       <SignIn />

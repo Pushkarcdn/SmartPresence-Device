@@ -32,7 +32,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const res = await hitApi("/signout");
       if (res?.success) {
         setIsSignedIn(false);
-        router.push("/");
+        // router.push("/");
+        location.href = "/";
       }
       return res?.success;
     } catch (error) {
@@ -48,6 +49,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (userData) setIsSignedIn(!!userData);
+    console.log("userData", userData);
   }, [userData]);
 
   return (

@@ -7,7 +7,7 @@ import hitApi from "@/lib/axios";
 import Navbar from "@/components/global/navbars/Navbar";
 import Loader from "@/components/global/ui/Loader";
 
-export default function AdminLayout({
+export default function TeacherLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -19,14 +19,14 @@ export default function AdminLayout({
     // use hitApi() directly here
     const res = await hitApi("/current-user");
 
-    if (!res.success) {
+    if (!res?.success) {
       location.href = "/sign-in";
       // router.push("/sign-in");
     }
 
-    if (res.success && res.data.role === "teacher") {
-      location.href = "/teacher";
-      // router.push("/teacher");
+    if (res.success && res.data.role !== "teacher") {
+      location.href = "/sign-in";
+      // router.push("/sign-in");
     }
 
     setLoading(false);

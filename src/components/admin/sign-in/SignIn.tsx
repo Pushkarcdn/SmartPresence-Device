@@ -34,12 +34,19 @@ const SignIn: React.FC = () => {
 
     const res = await hitApi("/signin", "POST", formData);
 
-    if (!res?.success) setErr(res?.message);
+    console.log(res);
+
+    if (!res?.success) {
+      setErr(res?.message);
+      setLoading(false);
+      return;
+    }
 
     setErr("");
     refetch();
     setSuccess(true);
 
+    // location.href = "/";
     router.push("/");
 
     setLoading(false);

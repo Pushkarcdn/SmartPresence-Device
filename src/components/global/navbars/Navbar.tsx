@@ -9,6 +9,7 @@ import { getFileUrl } from "@/config";
 import { useAuth } from "@/contexts/AuthContext";
 import { PrimaryButton } from "@/components/global/buttons/Buttons";
 import ProfileImage from "../ui/ProfileImage";
+import Logout from "@/components/admin/globals/Logout";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -35,18 +36,29 @@ export default function Navbar() {
 
         {userData?.id && (
           <div className="flex items-center gap-2 select-none text-right">
-            {pathname !== "/live-attendance" ? (
-              <PrimaryButton
-                title="Attendance mode"
-                link="/live-attendance"
-                className="mr-12"
-              />
-            ) : (
-              <PrimaryButton
-                title="Dashboard"
-                link="/dashboard"
-                className="mr-12"
-              />
+            {userData.role.toLowerCase().includes("admin") && (
+              <>
+                {" "}
+                {pathname !== "/live-attendance" ? (
+                  <PrimaryButton
+                    title="Attendance mode"
+                    link="/live-attendance"
+                    className="mr-12"
+                  />
+                ) : (
+                  <PrimaryButton
+                    title="Dashboard"
+                    link="/dashboard"
+                    className="mr-12"
+                  />
+                )}
+              </>
+            )}
+
+            {!userData.role.toLowerCase().includes("admin") && (
+              <div className="mr-12">
+                <Logout />
+              </div>
             )}
 
             <div className="flex-col gap-0 hidden sm:flex">

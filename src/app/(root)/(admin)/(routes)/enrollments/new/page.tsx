@@ -569,7 +569,7 @@ const Enroll = () => {
           text={`${
             formData.role === "student" ? "Student" : "Teacher"
           } enrolled successfully!`}
-          link={`/enrollments/${formData.role}`}
+          link={`/enrollments/${formData.role}s`}
         />
       )}
     </div>
