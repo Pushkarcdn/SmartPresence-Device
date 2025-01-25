@@ -34,8 +34,6 @@ const SignIn: React.FC = () => {
 
     const res = await hitApi("/signin", "POST", formData);
 
-    console.log(res);
-
     if (!res?.success) {
       setErr(res?.message);
       setLoading(false);

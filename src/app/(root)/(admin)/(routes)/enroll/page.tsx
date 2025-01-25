@@ -97,7 +97,7 @@ const CamScreen = () => {
 
       if (response.ok) {
         setUploadStatus("Face registered successfully!");
-        console.log("API Response:", result);
+        // console.log("API Response:", result);
       } else {
         setUploadStatus(result.error || "Upload failed. Please try again.");
         console.error("API Error:", result);

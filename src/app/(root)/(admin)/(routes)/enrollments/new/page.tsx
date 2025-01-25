@@ -131,6 +131,16 @@ const Enroll = () => {
     }
   };
 
+  const deleteRegisteredImage = async (id: string) => {
+    try {
+      await fetch(`${config.PYTHON_BE_URL}/api/delete-face/${id}`, {
+        method: "DELETE",
+      });
+    } catch (error: any) {
+      console.error("Error deleting image from Python-BE:", error);
+    }
+  };
+
   useEffect(() => {
     enableVideoStream();
   }, []);
@@ -231,6 +241,8 @@ const Enroll = () => {
       setSuccessModalStatus(true);
     } else {
       setFailedText(res?.message || "An error occurred. Please try again.");
+      // delete the image from the api
+      deleteRegisteredImage(id);
     }
 
     setLoading(false);

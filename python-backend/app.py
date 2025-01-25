@@ -192,7 +192,7 @@ def identify_face():
 
     # Compare against registered faces
     registered_encodings, registered_ids = get_registered_faces()
-    matches = face_recognition.compare_faces(registered_encodings, face_encodings[0])
+    matches = face_recognition.compare_faces(registered_encodings, face_encodings[0], tolerance=0.4)
 
     if True in matches:
         match_index = matches.index(True)
@@ -216,8 +216,38 @@ def identify_face():
                     "message": "Face not recognized!",
                 }
             ),
-            404,
+            409,
         )
+
+# an api to delete the face image. the api is: /api/delete-face/<unique_id>
+@app.route("/api/delete-face/<unique_id>", methods=["DELETE"])
+def delete_face(unique_id):
+    """Delete the face image with the given unique ID."""
+
+    image_path = os.path.join(REGISTERED_DIR, f"{unique_id}.jpg")
+    if os.path.exists(image_path):
+        os.remove(image_path)
+        return (
+            jsonify(
+                {
+                    "status": 200,
+                    "success": True,
+                    "message": "Face deleted successfully",
+                }
+            ),
+            200,
+        )
+    else:
+        return (
+            jsonify(
+                {
+                    "status": 404,
+                    "success": False,
+                    "message": "Face not found",
+                }
+            ),
+            404,
+        )   
 
 
 if __name__ == "__main__":

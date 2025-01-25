@@ -41,7 +41,7 @@ const useFetch = <T,>(
       setData(response?.data);
     } catch (error: any) {
       if (axios.isCancel(error)) {
-        console.log("Request cancelled");
+        console.error("Request cancelled");
       } else {
         setErr(
           error?.response?.data?.message ||

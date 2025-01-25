@@ -7,12 +7,27 @@ import hitApi from "@/lib/axios";
 import DeleteModal from "@/components/global/modals/DeleteModal";
 import { CiTrash } from "react-icons/ci";
 import { FiEdit3 } from "react-icons/fi";
+import config from "@/config";
 
 const ActionCard = ({ id, refetch }: any) => {
   const [deleteModalStatus, setDeleteModalStatus] = useState(false);
 
+  const deleteRegisteredImage = async (id: string) => {
+    try {
+      await fetch(`${config.PYTHON_BE_URL}/api/delete-face/${id}`, {
+        method: "DELETE",
+      });
+    } catch (error: any) {
+      console.error("Error deleting image from Python-BE:", error);
+    }
+  };
+
   const deleteUser = async () => {
-    await hitApi(`/users/${id}`, `DELETE`);
+    const res = await hitApi(`/users/${id}`, `DELETE`);
+
+    if (res.success) {
+      await deleteRegisteredImage(id);
+    }
 
     setDeleteModalStatus(false);
 

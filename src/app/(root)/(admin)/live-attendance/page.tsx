@@ -14,6 +14,8 @@ const CamScreen = () => {
       audioRef.current.play().catch((error) => {
         console.error("Error playing audio: ", error);
       });
+    } else {
+      console.error("Audio ref is null");
     }
   };
 
@@ -31,14 +33,8 @@ const CamScreen = () => {
         playAudio();
         setTimeout(() => {
           setData(null);
-        }, 2000);
+        }, 1000);
       } else {
-        // setFailedText(
-        //   res?.message || "Something went wrong. Please try again."
-        // );
-        // setTimeout(() => {
-        //   setFailedText(null);
-        // }, 1000);
       }
     } catch (err) {
       console.error("Error making present!", err);
@@ -58,9 +54,6 @@ const CamScreen = () => {
         setFailedText(
           "Unable to access the webcam. Please check your permissions."
         );
-        // setTimeout(() => {
-        //   setFailedText(null);
-        // }, 1000);
       }
     };
 
@@ -110,26 +103,17 @@ const CamScreen = () => {
               makePresent(res.unique_id);
             }
           } else {
-            // setFailedText(
-            //   res?.message || "Something went wrong. Please try again."
-            // );
-            // setTimeout(() => {
-            //   setFailedText(null);
-            // }, 1000);
           }
         } catch (err) {
           console.error("Error sending image.", err);
-          // setFailedText("Something went wrong. Please try again");
-          // setTimeout(() => {
-          //   setFailedText(null);
-          // }, 1000);
         }
       }
     };
 
     const intervalId = setInterval(() => {
+      if (data) return;
       captureAndSendImage();
-    }, 2000); // Capture and send every 2 seconds
+    }, 1000);
 
     return () => {
       clearInterval(intervalId);
@@ -155,36 +139,19 @@ const CamScreen = () => {
           </p>
         )}
 
+        <audio ref={audioRef} src="/audio/thank-you.mp3" className="hidden" />
+
         {data?.success && (
           <div className="flex flex-col gap-3 text-cenetr">
             <p className="text-green-600 bg-green-100 py-2.5 px-6 rounded-lg">
               Thank you!
             </p>
-            <audio
-              ref={audioRef}
-              src="/audio/thank-you.mp3"
-              // className="hidden"
-            />
+
             <p>
               {data.data.firstName} {data.data.lastName}
             </p>
           </div>
         )}
-
-        {/* <div className="">
-            {data?.unique_id && (
-              <div className="flex flex-col gap-3 text-cenetr">
-                <p className="text-green-500">{response.message}</p>
-                <p>ID: {response.unique_id}</p>
-              </div>
-            )}
-
-            {response?.error && (
-              <div>
-                <p className="text-red-500">{response.error}</p>
-              </div>
-            )}
-          </div> */}
       </div>
     </div>
   );

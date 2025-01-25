@@ -49,7 +49,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (userData) setIsSignedIn(!!userData);
-    console.log("userData", userData);
   }, [userData]);
 
   return (

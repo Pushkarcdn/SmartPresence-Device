@@ -64,8 +64,6 @@ const Attendances = () => {
     // Send the form data to the server
     const res = await hitApi("/day-attendances", "POST", formData);
 
-    console.log(res);
-
     if (res?.success) {
       setSuccessModalStatus(true);
       setAttendances(res?.data?.attendances);
@@ -83,7 +81,6 @@ const Attendances = () => {
     const student = attendances.find(
       (attendance: any) => attendance.userId === id
     );
-    console.log(student);
     if (student) {
       return true;
     } else {
