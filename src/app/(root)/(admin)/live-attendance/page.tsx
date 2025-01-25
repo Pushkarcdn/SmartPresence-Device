@@ -8,6 +8,12 @@ import React, { useRef, useState, useEffect } from "react";
 
 const CamScreen = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
+  const [failedText, setFailedText] = useState<string | null>(null);
+  const [data, setData] = useState<any>();
+  const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
 
   const playAudio = () => {
     if (audioRef.current) {
@@ -19,12 +25,6 @@ const CamScreen = () => {
     }
   };
 
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
-
-  const [failedText, setFailedText] = useState<string | null>(null);
-  const [data, setData] = useState<any>();
-
   const makePresent = async (id: string) => {
     try {
       const res = await hitApi(`/record-presence/${id}`);
@@ -35,37 +35,50 @@ const CamScreen = () => {
           setData(null);
         }, 1000);
       } else {
+        console.error("Failed to record presence.");
       }
     } catch (err) {
       console.error("Error making present!", err);
     }
   };
 
-  useEffect(() => {
-    const enableVideoStream = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: false,
-        });
-        setMediaStream(stream);
-      } catch (err) {
-        console.error("Error accessing webcam", err);
-        setFailedText(
-          "Unable to access the webcam. Please check your permissions."
-        );
-      }
-    };
+  const enableVideoStream = async (deviceId?: string) => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: deviceId ? { deviceId: { exact: deviceId } } : true,
+        audio: false,
+      });
+      setMediaStream(stream);
+    } catch (err) {
+      console.error("Error accessing webcam", err);
+      setFailedText(
+        "Unable to access the webcam. Please check your permissions."
+      );
+    }
+  };
 
-    enableVideoStream();
+  const fetchDevices = async () => {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(
+        (device) => device.kind === "videoinput"
+      );
+      setDevices(videoDevices);
+      if (videoDevices.length > 0) {
+        setSelectedDeviceId(videoDevices[0].deviceId); // Select the first device by default
+        await enableVideoStream(videoDevices[0].deviceId);
+      }
+    } catch (err) {
+      console.error("Error fetching devices: ", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchDevices();
   }, []);
 
   useEffect(() => {
-    if (
-      videoRef.current &&
-      mediaStream &&
-      videoRef.current.srcObject !== mediaStream
-    ) {
+    if (videoRef.current && mediaStream) {
       videoRef.current.srcObject = mediaStream;
     }
   }, [videoRef, mediaStream]);
@@ -102,7 +115,6 @@ const CamScreen = () => {
             if (res.unique_id) {
               makePresent(res.unique_id);
             }
-          } else {
           }
         } catch (err) {
           console.error("Error sending image.", err);
@@ -126,6 +138,24 @@ const CamScreen = () => {
   return (
     <div className="w-full flex flex-col items-center component-px component-py min-h-[80vh] gap-5 col-span-5">
       <div className="relative w-full flex flex-col items-center justify-center text-center gap-6">
+        {devices.length > 0 && (
+          <select
+            className="border rounded-lg p-2 bg-[#fafafa] outline-none"
+            value={selectedDeviceId || ""}
+            onChange={(e) => {
+              const deviceId = e.target.value;
+              setSelectedDeviceId(deviceId);
+              enableVideoStream(deviceId);
+            }}
+          >
+            {devices.map((device) => (
+              <option key={device.deviceId} value={device.deviceId}>
+                {device.label || `Camera ${device.deviceId}`}
+              </option>
+            ))}
+          </select>
+        )}
+
         <video
           ref={videoRef}
           autoPlay

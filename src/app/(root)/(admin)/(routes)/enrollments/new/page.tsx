@@ -51,10 +51,30 @@ const Enroll = () => {
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
 
-  const enableVideoStream = async () => {
+  const [cameras, setCameras] = useState<MediaDeviceInfo[]>([]);
+  const [selectedCamera, setSelectedCamera] = useState<string | null>(null);
+
+  const fetchCameras = async () => {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(
+        (device) => device.kind === "videoinput"
+      );
+      setCameras(videoDevices);
+
+      // Automatically select the first camera
+      if (videoDevices.length > 0) {
+        setSelectedCamera(videoDevices[0].deviceId);
+      }
+    } catch (err) {
+      console.error("Error fetching cameras:", err);
+    }
+  };
+
+  const enableVideoStream = async (deviceId: string) => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
+        video: { deviceId: { exact: deviceId } },
         audio: false,
       });
       setMediaStream(stream);
@@ -142,8 +162,14 @@ const Enroll = () => {
   };
 
   useEffect(() => {
-    enableVideoStream();
+    fetchCameras();
   }, []);
+
+  useEffect(() => {
+    if (selectedCamera) {
+      enableVideoStream(selectedCamera);
+    }
+  }, [selectedCamera]);
 
   useEffect(() => {
     if (
@@ -493,6 +519,21 @@ const Enroll = () => {
             <>
               {!capturedImage && (
                 <div className="relative w-full flex flex-col gap-4 items-end">
+                  <div className="flex flex-col gap-2">
+                    <Select
+                      id="cameraSelect"
+                      value={selectedCamera}
+                      onChange={(value: string) => setSelectedCamera(value)}
+                      className="w-full h-10"
+                      options={cameras.map((camera) => ({
+                        value: camera.deviceId,
+                        label:
+                          camera.label ||
+                          `Camera ${cameras.indexOf(camera) + 1}`,
+                      }))}
+                      disabled={cameras.length === 0}
+                    />
+                  </div>
                   <video
                     ref={videoRef}
                     autoPlay
@@ -514,7 +555,6 @@ const Enroll = () => {
                   <PrimaryOutlineButton
                     title="Retake"
                     onClick={() => {
-                      enableVideoStream();
                       setCapturedImage(null);
                     }}
                   />
