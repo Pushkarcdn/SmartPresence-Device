@@ -1,5 +1,5 @@
 # Use official Node.js image as base
-FROM node:22-alpine
+FROM circleci/node:22
 
 # Set working directory inside the container
 WORKDIR /app
