@@ -9,7 +9,7 @@ tmux kill-session -t mysession 2>/dev/null
 tmux new-session -d -s mysession 'python ./python-backend/app.py'
 
 # Split the tmux window and run the second command
-tmux split-window -h -t mysession 'npm run dev'
+tmux split-window -h -t mysession 'npm start'
 
 # Attach to the tmux session
 tmux attach-session -t mysession
