@@ -36,6 +36,7 @@ jobs:
               docker stop nextjs-app || true
               docker rm -f nextjs-app || true
               docker run -d -p 3000:3000 --restart unless-stopped --name nextjs-app pushkarcdn/nextjs-app:latest
+              exit
             EOF
 
 workflows:
