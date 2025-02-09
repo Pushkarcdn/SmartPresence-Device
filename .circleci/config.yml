@@ -17,9 +17,9 @@ jobs:
       - setup_remote_docker
       - run: |
           docker build -t nextjs-app .
-          docker tag nextjs-app <your-dockerhub-username>/nextjs-app:latest
+          docker tag nextjs-app pushkarcdn/nextjs-app:latest
           echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-          docker push <your-dockerhub-username>/nextjs-app:latest
+          docker push pushkarcdn/nextjs-app:latest
 
 workflows:
   version: 2
