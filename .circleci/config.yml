@@ -22,11 +22,11 @@ jobs:
           name: Build and Push Docker Image
           command: |
             docker buildx create --use
-            docker buildx build --platform linux/arm64 -t nextjs-app:latest .
+            docker buildx build --platform linux/arm64 -t pushkarcdn/nextjs-app:latest .
       - run:
           name: Docker Login
           command: |
-            docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_PASSWORD"
+            docker login -u "pushkarcdn" -p "Doraemon@111"
       - run:
           name: Push Docker Image to Docker Hub
           command: |
