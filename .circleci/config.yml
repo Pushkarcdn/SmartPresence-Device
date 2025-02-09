@@ -19,18 +19,15 @@ jobs:
           name: Install Dependencies
           command: apk add --no-cache bash openssh-client sshpass
       - run:
-          name: Build and Push Docker Image
-          command: |
-            docker buildx create --use
-            docker buildx build --platform linux/arm64 -t pushkarcdn/nextjs-app:latest .
+        name: Docker Login
+        command: |
+          docker login -u "pushkarcdn" -p "Doraemon@111"
       - run:
-          name: Docker Login
-          command: |
-            docker login -u "pushkarcdn" -p "Doraemon@111"
-      - run:
-          name: Push Docker Image to Docker Hub
-          command: |
-            docker push pushkarcdn/nextjs-app:latest
+        name: Build and Push Docker Image for linux/arm64
+        command: |
+          docker buildx create --use --name mybuilder
+          docker buildx use mybuilder
+          docker buildx build --platform linux/arm64 -t pushkarcdn/nextjs-app:latest . --push
       - run:
           name: SSH into Azure VM and Deploy
           command: |
