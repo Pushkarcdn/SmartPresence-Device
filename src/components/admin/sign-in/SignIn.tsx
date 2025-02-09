@@ -62,7 +62,7 @@ const SignIn: React.FC = () => {
       >
         <section className="w-full max-w-lg component-px py-10  bg-white rounded-lg shadow-lg">
           <h2 className="text-3xl text-center font-semibold mb-3 text-primary">
-            Sign in
+            Sign in to SmartPresence
           </h2>
           <p className="text-sm text-center text-[#606060]">
             Enter your login credentials.
